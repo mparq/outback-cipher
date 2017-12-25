@@ -40,10 +40,16 @@ namespace ConsoleApplication
         private static readonly string alphabet = "abcdefghijklmnopqrstuvwxyz";
         public static void Main(string[] args)
         {
-            string key = args[0];
-            string stringToDecode = args[1];
-            var map = _buildReverseKeyMap(key);
-            Console.WriteLine(DecodeCipher(stringToDecode, map));
+            if (args.Length < 4)
+            {
+                Console.WriteLine('\n');
+                return;
+            }
+            string stringToDecode = args[0];
+            int start = int.Parse(args[1]);
+            int step = int.Parse(args[2]);
+            int limit = int.Parse(args[3]);
+            Console.WriteLine(EncodeRollingCaesarCipher(stringToDecode, start, step, limit));
         }
 
         /// <summary>
@@ -56,6 +62,47 @@ namespace ConsoleApplication
         public static string DecodeOutbackCipher(string input)
         {
             return DecodeCipher(input, outback_map);
+        }
+
+        public static string EncodeRollingCaesarCipher(string input, int start, int step, int limit)
+        {
+            var output_buf = new StringBuilder();
+            char newChar;
+            int asciiCode;
+            int newCode;
+            int moveAmount = start;
+            bool isUpper;
+            bool isLower;
+            foreach (char c in input)
+            {
+                asciiCode = (int)c;
+                isUpper = asciiCode >= 65 && asciiCode <= 90;
+                isLower = asciiCode >= 97 && asciiCode <= 122;
+
+                if (isUpper || isLower)
+                {
+                    if (isUpper)
+                    {
+                        newCode = 65 + (((asciiCode - 65) + moveAmount) % 26);
+                    }
+                    else
+                    {
+                        newCode = 97 + (((asciiCode - 97) + moveAmount) % 26);
+                    }
+                    moveAmount = (moveAmount + step);
+                    if (moveAmount > limit)
+                    {
+                        moveAmount = moveAmount - limit;
+                    }
+                }
+                else
+                {
+                    newCode = asciiCode;
+                }
+                newChar = (char)newCode;
+                output_buf.Append(newChar);
+            }
+            return output_buf.ToString();
         }
 
         private static string DecodeCipher(string input, Dictionary<char, char> map)
